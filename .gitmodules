@@ -1,0 +1,6 @@
+[submodule "include/SDL"]
+	path = include/SDL
+	url = https://github.com/libsdl-org/SDL.git
+[submodule "tool/emsdk"]
+	path = tool/emsdk
+	url = https://github.com/emscripten-core/emsdk
