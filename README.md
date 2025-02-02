@@ -25,10 +25,20 @@ project.
     # Clone repo and submodules:
     git clone --recurse-submodules https://github.com/jude253/sdl3-demo-game.git
     ```
+1. Setup [Emscripten/emsdk](https://emscripten.org/docs/getting_started/downloads.html) (commands adapted from official install instructions and 
+assuming all submodules are present)
 
+    ```bash
+    cd tool/emsdk
+    ./emsdk install latest
+    ./emsdk activate latest
+    source ./emsdk_env.sh
+    cd ../..
+    ```
 
 ## Build Commands
 
+### Normal Executable
 ```bash
 cmake -S . -B build
 cmake --build build
@@ -36,7 +46,7 @@ cmake --build build
 
 Build approach was modeled after this: https://github.com/libsdl-org/SDL/blob/main/docs/INTRO-cmake.md
 
-## Run Command
+#### Run Command
 
 After building, run: 
 ```bash
@@ -44,5 +54,25 @@ After building, run:
 ```
 
 
+### WASM
+
+First time in terminal session run: `source ./emsdk_env.sh`
+
+```bash
+emcmake cmake -S . -B build
+emmake cmake --build build
+```
+
+Build approach modeled after this: https://github.com/libsdl-org/SDL/blob/main/docs/README-emscripten.md#building-sdlemscripten
+
+#### Run Command
+
+After building, run: 
+```bash
+emrun build/woodeneye-008.html
+```
+
+
 # TODO
-- Add Emscripten setup/commands to build for WASM
+- Build with Bazel?
+  - Use: https://github.com/bazel-contrib/rules_foreign_cc ?
