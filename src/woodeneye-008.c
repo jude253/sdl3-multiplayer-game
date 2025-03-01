@@ -17,6 +17,12 @@ typedef struct {
     SDL_KeyboardID keyboard;
     double pos[3];
     double vel[3];
+    /*
+    Question: What is pitch?
+
+    Question: What is yaw?
+
+    */
     unsigned int yaw;
     int pitch;
     float radius, height;
@@ -101,6 +107,10 @@ static void shoot(int shooter, Player players[], int players_len)
     }
 }
 
+/*
+Question: Why does shoot use the parameter `Player players[]` and
+    `update` uses `Player *players`?
+*/
 static void update(Player *players, int players_len, Uint64 dt_ns)
 {
     int i;
@@ -188,6 +198,16 @@ static void drawClippedSegment(
 }
 
 static char debug_string[32];
+
+/*
+Question: What is `const float (*edges)[6]`?
+    - Is there a variable name in there somewhere?
+    - How can an input parameter not have a name, like that looks like?
+
+Answer:
+    - Guess: this represents the edges of the map cube somehow? Just not
+        sure how it would be referenced in the function body?
+*/
 static void draw(SDL_Renderer *renderer, const float (*edges)[6], const Player players[], int players_len)
 {
     int w, h, i, j, k;
@@ -325,6 +345,10 @@ static void initEdges(int scale, float (*edges)[6], int edges_len)
     }
 }
 
+/*
+Question: Why is it `void **appstate` with two pointer *'s here and
+    `void *appstate` in other `SDL_App` functions?
+*/
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 {
     if (!SDL_SetAppMetadata("Example splitscreen shooter game", "1.0", "com.example.woodeneye-008")) {
@@ -416,6 +440,28 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
             SDL_KeyboardID id = event->key.which;
             int index = whoseKeyboard(id, players, player_count);
             if (index >= 0) {
+                /*
+                Question: What is the `|` operator?
+
+                Answer: bitwise or
+
+                Question: What is the `.wasd` value?
+
+                Answer:
+                    - It's an unsigned char
+                    - Is this some sort of way to effeciently store
+                        buttons being currently pressed?
+
+                Question: Why use the values 1, 2, 4, 8, 16?
+                    - Why not use MACROS to say what these are?
+                    - Are these chars?
+
+                Answer:
+                    - Guess: these are some way to store the buttons
+                        being pressed effeciently and each `|` adds a
+                        value to trigger an update to the `wasd` value
+                        and `&`
+                */
                 if (sym == SDLK_W) players[index].wasd |= 1;
                 if (sym == SDLK_A) players[index].wasd |= 2;
                 if (sym == SDLK_S) players[index].wasd |= 4;
@@ -438,6 +484,20 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
             if (sym == SDLK_ESCAPE) return SDL_APP_SUCCESS;
             int index = whoseKeyboard(id, players, player_count);
             if (index >= 0) {
+                /*
+                Question: what is the `&` operator?
+
+                Answer: bitwise and
+
+                Question: why use the values 30, 29, 27, 23, 15?
+
+                Answer:
+                    - Guess: this somehow undoes the `1, 2, 4, 8, 16`
+                        in the wasd unsigned char that is set by
+                        keydown. I would need to look at the different
+                        unsigned char values of 30, 29, 27, 23, 15 to
+                        see if this is true.
+                */
                 if (sym == SDLK_W) players[index].wasd &= 30;
                 if (sym == SDLK_A) players[index].wasd &= 29;
                 if (sym == SDLK_S) players[index].wasd &= 27;
