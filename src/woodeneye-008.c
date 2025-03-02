@@ -6,6 +6,13 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 
+/*
+Quesion: what does MAP_BOX_SCALE do?  I change it, recompile the game 
+    and I can't seem to tell what is different.
+
+Answer:
+    - Guess: Could it be the height of the box? Not sure?
+*/
 #define MAP_BOX_SCALE 16
 #define MAP_BOX_EDGES_LEN (12 + MAP_BOX_SCALE * 2)
 #define MAX_PLAYER_COUNT 4
@@ -35,6 +42,11 @@ typedef struct {
     SDL_Renderer *renderer;
     int player_count;
     Player players[MAX_PLAYER_COUNT];
+    /*
+    Question: what is this edges construct?
+        - Why does it change with the `MAP_BOX_EDGES_LEN` and 
+            `MAP_BOX_SCALE` macros?
+    */
     float edges[MAP_BOX_EDGES_LEN][6];
 } AppState;
 
@@ -205,6 +217,19 @@ Question: What is `const float (*edges)[6]`?
     - How can an input parameter not have a name, like that looks like?
 
 Answer:
+    - From ChatGPT: 
+        The parameter const float (*edges)[6] in a function means:
+
+        - const: The elements of the array are constant and cannot be 
+            modified.
+        
+        - float (*edges)[6]: edges is a pointer to an array of 6 float
+            values.
+
+        This means the function expects a pointer to an array where each
+        array contains 6 float elements, and the function will not
+        modify the values in these arrays.
+
     - Guess: this represents the edges of the map cube somehow? Just not
         sure how it would be referenced in the function body?
 */
