@@ -38,6 +38,15 @@ assuming all submodules are present)
 
 ## Build Commands
 
+I added a simple bash build script at `bin/build.sh` to make the build
+commands more easily repeatible for me.  I am thinking something like
+bazel might be better eventually, but for now this is more systematic.
+
+
+NOTE: speed up build by adding -j<number_of_cores> to build command. 
+Ex: `cmake --build build -j8`
+
+
 ### Normal Executable
 ```bash
 cmake -S . -B build
