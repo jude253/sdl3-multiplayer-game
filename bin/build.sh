@@ -61,7 +61,7 @@ function clean {
 function print_usage {
   echo -e "${CYAN}USAGE:${NO_COLOR}"
   echo
-  echo -e "bin/build.sh [setup_wasm,normal,wasm,clean]"
+  echo -e "bin/build.sh [setup_wasm,normal,wasm,all,clean]"
   echo
 }
 
