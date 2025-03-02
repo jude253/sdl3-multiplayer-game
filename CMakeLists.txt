@@ -22,3 +22,7 @@ add_executable(woodeneye-008 src/woodeneye-008.c)
 
 # Link libraries
 target_link_libraries(woodeneye-008 PRIVATE SDL3::SDL3 mongoose)
+
+# Dummy Server
+add_executable(server src/server.c)
+target_link_libraries(server PRIVATE mongoose)
