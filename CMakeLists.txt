@@ -13,8 +13,10 @@ target_include_directories(mongoose PUBLIC include/mongoose)
 # This assumes the SDL source is available in include/SDL
 add_subdirectory(include/SDL EXCLUDE_FROM_ALL)
 
-# Copy html file to build folder in case compiling for WASM:
-configure_file("public/woodeneye-008.html" "woodeneye-008.html")
+# on Web targets, we need CMake to generate a HTML webpage. 
+if(EMSCRIPTEN)
+  set(CMAKE_EXECUTABLE_SUFFIX ".html" CACHE INTERNAL "")
+endif()
 
 
 # Create your game executable target as usual
