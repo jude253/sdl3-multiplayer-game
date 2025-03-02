@@ -25,6 +25,23 @@ add_executable(woodeneye-008 src/woodeneye-008.c)
 # Link libraries
 target_link_libraries(woodeneye-008 PRIVATE SDL3::SDL3 mongoose)
 
-# Dummy Server
-add_executable(server src/server.c)
-target_link_libraries(server PRIVATE mongoose)
+if (NOT EMSCRIPTEN)
+    # Dummy Server -- only compile not for wasm
+    add_executable(server src/server.c)
+    target_link_libraries(server PRIVATE mongoose)
+endif()
+
+if(EMSCRIPTEN)
+    # Dummy client -- only compile for wasm
+    #
+    # NOTE: Relying on the fact that using emcmake/emmake will
+    # automatically inlcude the `<emscripten/websocket.h>` code
+    add_executable(client-wasm src/client-wasm.c)
+
+    # Adding link option required from here:
+    # https://emscripten.org/docs/porting/networking.html#emscripten-websockets-api
+    target_link_options(client-wasm BEFORE PUBLIC "-lwebsocket.js")
+    
+    # For debugging websockets:
+    target_link_options(client-wasm BEFORE PUBLIC "-sWEBSOCKET_DEBUG")
+endif()

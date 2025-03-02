@@ -77,6 +77,11 @@ if [ "$1" = "wasm" ]; then
   build_wasm
 fi
 
+if [ "$1" = "all" ]; then
+  build_wasm
+  build_non_wasm
+fi
+
 if [ "$1" = "clean" ]; then
   clean
 fi
