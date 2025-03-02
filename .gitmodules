@@ -4,3 +4,6 @@
 [submodule "tool/emsdk"]
 	path = tool/emsdk
 	url = https://github.com/emscripten-core/emsdk
+[submodule "include/mongoose"]
+	path = include/mongoose
+	url = https://github.com/cesanta/mongoose.git
