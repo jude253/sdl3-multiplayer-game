@@ -23,7 +23,7 @@ project.
 1. Clone this repo including submodules 
     ```bash
     # Clone repo and submodules:
-    git clone --recurse-submodules https://github.com/jude253/sdl3-demo-game.git
+    git clone --recurse-submodules https://github.com/jude253/sdl3-multiplayer-game.git
     ```
 1. Setup [Emscripten/emsdk](https://emscripten.org/docs/getting_started/downloads.html) (commands adapted from official install instructions and 
 assuming all submodules are present)
