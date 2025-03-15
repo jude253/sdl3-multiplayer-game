@@ -19,15 +19,23 @@ if(EMSCRIPTEN)
   set(CMAKE_EXECUTABLE_SUFFIX ".html" CACHE INTERNAL "")
 endif()
 
+# EXPERIMENTAL
 add_executable(queue src/utils/queue.c)
 add_executable(voipchat src/voipchat.c)
+target_link_libraries(voipchat PRIVATE SDL3::SDL3 SDL3_net::SDL3_net)
 
+# PROTOTYPE DIR
+add_executable(prototype_client src/prototype/client.c src/prototype/prototype.h)
+add_executable(prototype_server src/prototype/server.c src/prototype/prototype.h)
+target_link_libraries(prototype_client PRIVATE SDL3::SDL3 mongoose SDL3_net::SDL3_net)
+target_link_libraries(prototype_server PRIVATE SDL3::SDL3 mongoose SDL3_net::SDL3_net)
+
+
+# From EXAMPLE:
 # Create your game executable target as usual
 add_executable(woodeneye-008 src/woodeneye-008.c)
-
 # Link libraries
 target_link_libraries(woodeneye-008 PRIVATE SDL3::SDL3 mongoose)
-target_link_libraries(voipchat PRIVATE SDL3::SDL3 SDL3_net::SDL3_net)
 
 if (NOT EMSCRIPTEN)
     # Dummy Server -- only compile not for wasm
