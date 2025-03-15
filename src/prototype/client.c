@@ -2,6 +2,12 @@
 
 static char debug_string[32];
 static SDL_FPoint points[500];
+static SDL_Texture *texture = NULL;
+static int texture_width = 0;
+static int texture_height = 0;
+
+#define WINDOW_WIDTH 640
+#define WINDOW_HEIGHT 480
 
 static void draw(SDL_Renderer *renderer)
 {
@@ -40,6 +46,34 @@ static void draw(SDL_Renderer *renderer)
     SDL_RenderLine(renderer, 0, 0, 640, 480);
     SDL_RenderLine(renderer, 0, 480, 640, 0);
 
+    /* Just draw the static texture a few times. You can think of it like a
+       stamp, there isn't a limit to the number of times you can draw with it. */
+    SDL_FRect dst_rect;
+    const Uint64 nowMs = SDL_GetTicks();
+    const float direction = ((nowMs % 2000) >= 1000) ? 1.0f : -1.0f;
+    const float scale = ((float)(((int)(nowMs % 1000)) - 500) / 500.0f) * direction;
+
+    /* top left */
+    dst_rect.x = (100.0f * scale);
+    dst_rect.y = 0.0f;
+    dst_rect.w = (float)texture_width;
+    dst_rect.h = (float)texture_height;
+    SDL_RenderTexture(renderer, texture, NULL, &dst_rect);
+
+    /* center this one. */
+    dst_rect.x = ((float)(WINDOW_WIDTH - texture_width)) / 2.0f;
+    dst_rect.y = ((float)(WINDOW_HEIGHT - texture_height)) / 2.0f;
+    dst_rect.w = (float)texture_width;
+    dst_rect.h = (float)texture_height;
+    SDL_RenderTexture(renderer, texture, NULL, &dst_rect);
+
+    /* bottom right. */
+    dst_rect.x = ((float)(WINDOW_WIDTH - texture_width)) - (100.0f * scale);
+    dst_rect.y = (float)(WINDOW_HEIGHT - texture_height);
+    dst_rect.w = (float)texture_width;
+    dst_rect.h = (float)texture_height;
+    SDL_RenderTexture(renderer, texture, NULL, &dst_rect);
+
     /* Draw FPS */
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
     SDL_RenderDebugText(renderer, 5, 5, debug_string);
@@ -64,7 +98,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     {
         return SDL_APP_FAILURE;
     }
-    if (!SDL_CreateWindowAndRenderer("client", 640, 480, 0, &as->window, &as->renderer))
+    if (!SDL_CreateWindowAndRenderer("client", WINDOW_WIDTH, WINDOW_HEIGHT, 0, &as->window, &as->renderer))
     {
         return SDL_APP_FAILURE;
     }
@@ -76,6 +110,30 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
         points[i].y = (SDL_randf() * 280.0f) + 100.0f;
     }
 
+    SDL_Surface *surface = NULL;
+    char *bmp_path = NULL;
+
+    SDL_asprintf(&bmp_path, "%sasset/image/sample.bmp", SDL_GetBasePath()); /* allocate a string of the full file path */
+    surface = SDL_LoadBMP(bmp_path);
+    if (!surface)
+    {
+        SDL_Log("Couldn't load bitmap: %s", SDL_GetError());
+        return SDL_APP_FAILURE;
+    }
+
+    SDL_free(bmp_path); /* done with this, the file is loaded. */
+
+    texture_width = surface->w;
+    texture_height = surface->h;
+
+    texture = SDL_CreateTextureFromSurface(as->renderer, surface);
+    if (!texture)
+    {
+        SDL_Log("Couldn't create static texture: %s", SDL_GetError());
+        return SDL_APP_FAILURE;
+    }
+
+    SDL_DestroySurface(surface); /* done with this, the texture has a copy of the pixels now. */
     return SDL_APP_CONTINUE;
 }
 

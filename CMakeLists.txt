@@ -6,6 +6,8 @@ project(woodeneye-008)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIGURATION>")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIGURATION>")
 
+set(INCLUDE_ASSET_DIRECTORY include/asset CACHE STRING "To include data files.")
+
 # Add mongoose library and make it available to include
 add_library(mongoose STATIC include/mongoose/mongoose.c include/mongoose/mongoose.h)
 target_include_directories(mongoose PUBLIC include/mongoose)
@@ -38,6 +40,9 @@ add_executable(woodeneye-008 src/woodeneye-008.c)
 target_link_libraries(woodeneye-008 PRIVATE SDL3::SDL3 mongoose)
 
 if (NOT EMSCRIPTEN)
+    # Copy asset include dir only if not wasm
+    file(COPY ${INCLUDE_ASSET_DIRECTORY} DESTINATION ${CMAKE_BINARY_DIR})
+
     # Dummy Server -- only compile not for wasm
     add_executable(server src/server.c)
     target_link_libraries(server PRIVATE mongoose)
@@ -50,10 +55,12 @@ if(EMSCRIPTEN)
     # automatically inlcude the `<emscripten/websocket.h>` code
     add_executable(client-wasm src/client-wasm.c)
 
-    # Adding link option required from here:
+    # Include assets folder in wasm bundle:
+    target_link_options(prototype_client BEFORE PUBLIC "--embed-file=${CMAKE_SOURCE_DIR}/${INCLUDE_ASSET_DIRECTORY}@/asset/")
+
+    # Adding link option required from here to use websockets:
     # https://emscripten.org/docs/porting/networking.html#emscripten-websockets-api
     target_link_options(client-wasm BEFORE PUBLIC "-lwebsocket.js")
-    
     # For debugging websockets:
     target_link_options(client-wasm BEFORE PUBLIC "-sWEBSOCKET_DEBUG")
 endif()
