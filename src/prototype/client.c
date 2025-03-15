@@ -1,6 +1,7 @@
 #include "prototype.h"
 
 static char debug_string[32];
+static SDL_FPoint points[500];
 
 static void draw(SDL_Renderer *renderer)
 {
@@ -13,6 +14,31 @@ static void draw(SDL_Renderer *renderer)
 
     /* clear the window to the draw color. */
     SDL_RenderClear(renderer);
+
+    /* draw a filled rectangle in the middle of the canvas. */
+    SDL_SetRenderDrawColor(renderer, 0, 0, 255, SDL_ALPHA_OPAQUE); /* blue, full alpha */
+    SDL_FRect rect;
+    rect.x = rect.y = 100;
+    rect.w = 440;
+    rect.h = 280;
+    SDL_RenderFillRect(renderer, &rect);
+
+    /* draw some points across the canvas. */
+    SDL_SetRenderDrawColor(renderer, 255, 0, 0, SDL_ALPHA_OPAQUE); /* red, full alpha */
+    SDL_RenderPoints(renderer, points, SDL_arraysize(points));
+
+    /* draw a unfilled rectangle in-set a little bit. */
+    SDL_SetRenderDrawColor(renderer, 0, 255, 0, SDL_ALPHA_OPAQUE); /* green, full alpha */
+    rect.x += 30;
+    rect.y += 30;
+    rect.w -= 60;
+    rect.h -= 60;
+    SDL_RenderRect(renderer, &rect);
+
+    /* draw two lines in an X across the whole canvas. */
+    SDL_SetRenderDrawColor(renderer, 255, 255, 0, SDL_ALPHA_OPAQUE); /* yellow, full alpha */
+    SDL_RenderLine(renderer, 0, 0, 640, 480);
+    SDL_RenderLine(renderer, 0, 480, 640, 0);
 
     /* Draw FPS */
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
@@ -41,6 +67,13 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     if (!SDL_CreateWindowAndRenderer("client", 640, 480, 0, &as->window, &as->renderer))
     {
         return SDL_APP_FAILURE;
+    }
+
+    /* set up some random points */
+    for (int i = 0; i < SDL_arraysize(points); i++)
+    {
+        points[i].x = (SDL_randf() * 440.0f) + 100.0f;
+        points[i].y = (SDL_randf() * 280.0f) + 100.0f;
     }
 
     return SDL_APP_CONTINUE;
