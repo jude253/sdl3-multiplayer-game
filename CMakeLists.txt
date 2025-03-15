@@ -18,6 +18,8 @@ if(EMSCRIPTEN)
   set(CMAKE_EXECUTABLE_SUFFIX ".html" CACHE INTERNAL "")
 endif()
 
+# Create your game executable target as usual
+add_executable(queue src/utils/queue.c)
 
 # Create your game executable target as usual
 add_executable(woodeneye-008 src/woodeneye-008.c)
