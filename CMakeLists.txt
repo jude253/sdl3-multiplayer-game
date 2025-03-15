@@ -12,20 +12,22 @@ target_include_directories(mongoose PUBLIC include/mongoose)
 
 # This assumes the SDL source is available in include/SDL
 add_subdirectory(include/SDL EXCLUDE_FROM_ALL)
+add_subdirectory(include/SDL_net EXCLUDE_FROM_ALL)
 
 # on Web targets, we need CMake to generate a HTML webpage. 
 if(EMSCRIPTEN)
   set(CMAKE_EXECUTABLE_SUFFIX ".html" CACHE INTERNAL "")
 endif()
 
-# Create your game executable target as usual
 add_executable(queue src/utils/queue.c)
+add_executable(voipchat src/voipchat.c)
 
 # Create your game executable target as usual
 add_executable(woodeneye-008 src/woodeneye-008.c)
 
 # Link libraries
 target_link_libraries(woodeneye-008 PRIVATE SDL3::SDL3 mongoose)
+target_link_libraries(voipchat PRIVATE SDL3::SDL3 SDL3_net::SDL3_net)
 
 if (NOT EMSCRIPTEN)
     # Dummy Server -- only compile not for wasm

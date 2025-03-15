@@ -7,3 +7,6 @@
 [submodule "include/mongoose"]
 	path = include/mongoose
 	url = https://github.com/cesanta/mongoose.git
+[submodule "include/SDL_net"]
+	path = include/SDL_net
+	url = https://github.com/libsdl-org/SDL_net.git
