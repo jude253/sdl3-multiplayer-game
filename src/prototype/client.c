@@ -30,6 +30,14 @@ static void draw(SDL_Renderer *renderer)
     const float scale = ((float)(((int)(nowMs % 1000)) - 500) / 500.0f) * direction;
     const float size = 200.0f + (200.0f * scale);
 
+    // Add some affine stretch thing. Can maybe do this with Triangle?
+    // or directly onto a wall/floor?  Having trouble understanding it
+    // fully at the moment.  Why are there only 3 coordinates to specify?
+    // Where would the 4th coordinate end up going?
+    SDL_FPoint origin = {.x = 0.0f, .y = 200.0f};
+    SDL_FPoint right = {.x = 100.0f, .y = 250.0f};
+    SDL_FPoint down = {.x = 50.0f, .y = 400.0f};
+    SDL_RenderTextureAffine(renderer, texture, NULL, &origin, &right, &down);
     SDL_Vertex vertices[4];
     int i;
 
