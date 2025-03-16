@@ -52,27 +52,20 @@ static void draw(SDL_Renderer *renderer)
     const Uint64 nowMs = SDL_GetTicks();
     const float direction = ((nowMs % 2000) >= 1000) ? 1.0f : -1.0f;
     const float scale = ((float)(((int)(nowMs % 1000)) - 500) / 500.0f) * direction;
+    SDL_FPoint center;
 
-    /* top left */
-    dst_rect.x = (100.0f * scale);
-    dst_rect.y = 0.0f;
-    dst_rect.w = (float)texture_width;
-    dst_rect.h = (float)texture_height;
-    SDL_RenderTexture(renderer, texture, NULL, &dst_rect);
+    /* we'll have a texture rotate around over 2 seconds (2000 milliseconds). 360 degrees in a circle! */
+    const float rotation = (((float)((int)(nowMs % 2000))) / 2000.0f) * 360.0f;
 
-    /* center this one. */
+    /* Center this one, and draw it with some rotation so it spins! */
     dst_rect.x = ((float)(WINDOW_WIDTH - texture_width)) / 2.0f;
     dst_rect.y = ((float)(WINDOW_HEIGHT - texture_height)) / 2.0f;
     dst_rect.w = (float)texture_width;
     dst_rect.h = (float)texture_height;
-    SDL_RenderTexture(renderer, texture, NULL, &dst_rect);
-
-    /* bottom right. */
-    dst_rect.x = ((float)(WINDOW_WIDTH - texture_width)) - (100.0f * scale);
-    dst_rect.y = (float)(WINDOW_HEIGHT - texture_height);
-    dst_rect.w = (float)texture_width;
-    dst_rect.h = (float)texture_height;
-    SDL_RenderTexture(renderer, texture, NULL, &dst_rect);
+    /* rotate it around the center of the texture; you can rotate it from a different point, too! */
+    center.x = texture_width / 2.0f;
+    center.y = texture_height / 2.0f;
+    SDL_RenderTextureRotated(renderer, texture, NULL, &dst_rect, rotation, &center, SDL_FLIP_NONE);
 
     /* Draw FPS */
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
