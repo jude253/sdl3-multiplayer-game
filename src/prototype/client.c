@@ -21,51 +21,78 @@ static void draw(SDL_Renderer *renderer)
     /* clear the window to the draw color. */
     SDL_RenderClear(renderer);
 
-    /* draw a filled rectangle in the middle of the canvas. */
-    SDL_SetRenderDrawColor(renderer, 0, 0, 255, SDL_ALPHA_OPAQUE); /* blue, full alpha */
-    SDL_FRect rect;
-    rect.x = rect.y = 100;
-    rect.w = 440;
-    rect.h = 280;
-    SDL_RenderFillRect(renderer, &rect);
-
-    /* draw some points across the canvas. */
-    SDL_SetRenderDrawColor(renderer, 255, 0, 0, SDL_ALPHA_OPAQUE); /* red, full alpha */
-    SDL_RenderPoints(renderer, points, SDL_arraysize(points));
-
-    /* draw a unfilled rectangle in-set a little bit. */
-    SDL_SetRenderDrawColor(renderer, 0, 255, 0, SDL_ALPHA_OPAQUE); /* green, full alpha */
-    rect.x += 30;
-    rect.y += 30;
-    rect.w -= 60;
-    rect.h -= 60;
-    SDL_RenderRect(renderer, &rect);
-
-    /* draw two lines in an X across the whole canvas. */
-    SDL_SetRenderDrawColor(renderer, 255, 255, 0, SDL_ALPHA_OPAQUE); /* yellow, full alpha */
-    SDL_RenderLine(renderer, 0, 0, 640, 480);
-    SDL_RenderLine(renderer, 0, 480, 640, 0);
-
     /* Just draw the static texture a few times. You can think of it like a
        stamp, there isn't a limit to the number of times you can draw with it. */
-    SDL_FRect dst_rect;
     const Uint64 nowMs = SDL_GetTicks();
+
+    /* we'll have the triangle grow and shrink over a few seconds. */
     const float direction = ((nowMs % 2000) >= 1000) ? 1.0f : -1.0f;
     const float scale = ((float)(((int)(nowMs % 1000)) - 500) / 500.0f) * direction;
-    SDL_FPoint center;
+    const float size = 200.0f + (200.0f * scale);
 
-    /* we'll have a texture rotate around over 2 seconds (2000 milliseconds). 360 degrees in a circle! */
-    const float rotation = (((float)((int)(nowMs % 2000))) / 2000.0f) * 360.0f;
+    SDL_Vertex vertices[4];
+    int i;
 
-    /* Center this one, and draw it with some rotation so it spins! */
-    dst_rect.x = ((float)(WINDOW_WIDTH - texture_width)) / 2.0f;
-    dst_rect.y = ((float)(WINDOW_HEIGHT - texture_height)) / 2.0f;
-    dst_rect.w = (float)texture_width;
-    dst_rect.h = (float)texture_height;
-    /* rotate it around the center of the texture; you can rotate it from a different point, too! */
-    center.x = texture_width / 2.0f;
-    center.y = texture_height / 2.0f;
-    SDL_RenderTextureRotated(renderer, texture, NULL, &dst_rect, rotation, &center, SDL_FLIP_NONE);
+    /* Draw a single triangle with a different color at each vertex. Center this one and make it grow and shrink. */
+    /* You always draw triangles with this, but you can string triangles together to form polygons. */
+    SDL_zeroa(vertices);
+    vertices[0].position.x = ((float)WINDOW_WIDTH) / 2.0f;
+    vertices[0].position.y = (((float)WINDOW_HEIGHT) - size) / 2.0f;
+    vertices[0].color.r = 1.0f;
+    vertices[0].color.a = 1.0f;
+    vertices[1].position.x = (((float)WINDOW_WIDTH) + size) / 2.0f;
+    vertices[1].position.y = (((float)WINDOW_HEIGHT) + size) / 2.0f;
+    vertices[1].color.g = 1.0f;
+    vertices[1].color.a = 1.0f;
+    vertices[2].position.x = (((float)WINDOW_WIDTH) - size) / 2.0f;
+    vertices[2].position.y = (((float)WINDOW_HEIGHT) + size) / 2.0f;
+    vertices[2].color.b = 1.0f;
+    vertices[2].color.a = 1.0f;
+
+    SDL_RenderGeometry(renderer, NULL, vertices, 3, NULL, 0);
+
+    /* you can also map a texture to the geometry! Texture coordinates go from 0.0f to 1.0f. That will be the location
+       in the texture bound to this vertex. */
+    SDL_zeroa(vertices);
+    vertices[0].position.x = 10.0f;
+    vertices[0].position.y = 10.0f;
+    vertices[0].color.r = vertices[0].color.g = vertices[0].color.b = vertices[0].color.a = 1.0f;
+    vertices[0].tex_coord.x = 0.0f;
+    vertices[0].tex_coord.y = 0.0f;
+    vertices[1].position.x = 150.0f;
+    vertices[1].position.y = 10.0f;
+    vertices[1].color.r = vertices[1].color.g = vertices[1].color.b = vertices[1].color.a = 1.0f;
+    vertices[1].tex_coord.x = 1.0f;
+    vertices[1].tex_coord.y = 0.0f;
+    vertices[2].position.x = 10.0f;
+    vertices[2].position.y = 150.0f;
+    vertices[2].color.r = vertices[2].color.g = vertices[2].color.b = vertices[2].color.a = 1.0f;
+    vertices[2].tex_coord.x = 0.0f;
+    vertices[2].tex_coord.y = 1.0f;
+    SDL_RenderGeometry(renderer, texture, vertices, 3, NULL, 0);
+
+    /* Did that only draw half of the texture? You can do multiple triangles sharing some vertices,
+       using indices, to get the whole thing on the screen: */
+
+    /* Let's just move this over so it doesn't overlap... */
+    for (i = 0; i < 3; i++)
+    {
+        vertices[i].position.x += 450;
+    }
+
+    /* we need one more vertex, since the two triangles can share two of them. */
+    vertices[3].position.x = 600.0f;
+    vertices[3].position.y = 150.0f;
+    vertices[3].color.r = vertices[3].color.g = vertices[3].color.b = vertices[3].color.a = 1.0f;
+    vertices[3].tex_coord.x = 1.0f;
+    vertices[3].tex_coord.y = 1.0f;
+
+    /* And an index to tell it to reuse some of the vertices between triangles... */
+    {
+        /* 4 vertices, but 6 actual places they used. Indices need less bandwidth to transfer and can reorder vertices easily! */
+        const int indices[] = {0, 1, 2, 1, 2, 3};
+        SDL_RenderGeometry(renderer, texture, vertices, 4, indices, SDL_arraysize(indices));
+    }
 
     /* Draw FPS */
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
