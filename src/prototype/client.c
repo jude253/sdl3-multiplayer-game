@@ -62,8 +62,8 @@ static void draw(SDL_Renderer *renderer)
     /* you can also map a texture to the geometry! Texture coordinates go from 0.0f to 1.0f. That will be the location
        in the texture bound to this vertex. */
     SDL_zeroa(vertices);
-    vertices[0].position.x = 10.0f;
-    vertices[0].position.y = 10.0f;
+    vertices[0].position.x = 0.0f;
+    vertices[0].position.y = 0.0f;
     vertices[0].color.r = vertices[0].color.g = vertices[0].color.b = vertices[0].color.a = 1.0f;
     vertices[0].tex_coord.x = 0.0f;
     vertices[0].tex_coord.y = 0.0f;
