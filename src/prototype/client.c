@@ -1,4 +1,6 @@
 #include "prototype.h"
+#include <SDL3/SDL_render.h>
+#include <SDL3/SDL_surface.h>
 
 static char debug_string[32];
 static SDL_FPoint points[500];
@@ -90,7 +92,7 @@ static void draw(SDL_Renderer *renderer)
 
     /* we need one more vertex, since the two triangles can share two of them. */
     vertices[3].position.x = 600.0f;
-    vertices[3].position.y = 150.0f;
+    vertices[3].position.y = 300.0f;
     vertices[3].color.r = vertices[3].color.g = vertices[3].color.b = vertices[3].color.a = 1.0f;
     vertices[3].tex_coord.x = 1.0f;
     vertices[3].tex_coord.y = 1.0f;
@@ -162,6 +164,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     }
 
     SDL_DestroySurface(surface); /* done with this, the texture has a copy of the pixels now. */
+    SDL_SetDefaultTextureScaleMode(as->renderer, SDL_SCALEMODE_NEAREST);
     return SDL_APP_CONTINUE;
 }
 
