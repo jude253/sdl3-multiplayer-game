@@ -1,115 +1,81 @@
 #include "prototype.h"
 #include <SDL3/SDL_render.h>
 #include <SDL3/SDL_surface.h>
+#include <stdbool.h>
 
 static char debug_string[32];
-static SDL_FPoint points[500];
 static SDL_Texture *texture = NULL;
 static int texture_width = 0;
 static int texture_height = 0;
 
-#define WINDOW_WIDTH 640
-#define WINDOW_HEIGHT 480
+#define WINDOW_WIDTH 1280
+#define WINDOW_HEIGHT 720
 
-static void draw(SDL_Renderer *renderer)
+static void draw(AppState *as)
 {
     const double now = ((double)SDL_GetTicks()) / 1000.0; /* convert from milliseconds to seconds. */
     /* choose the color for the frame we will draw. The sine wave trick makes it fade between colors smoothly. */
     const float red = (float)(0.5 + 0.5 * SDL_sin(now));
     const float green = (float)(0.5 + 0.5 * SDL_sin(now + SDL_PI_D * 2 / 3));
     const float blue = (float)(0.5 + 0.5 * SDL_sin(now + SDL_PI_D * 4 / 3));
-    SDL_SetRenderDrawColorFloat(renderer, red, green, blue, SDL_ALPHA_OPAQUE_FLOAT); /* new color, full alpha. */
+    SDL_SetRenderDrawColorFloat(as->renderer, red, green, blue, SDL_ALPHA_OPAQUE_FLOAT); /* new color, full alpha. */
 
     /* clear the window to the draw color. */
-    SDL_RenderClear(renderer);
+    SDL_RenderClear(as->renderer);
 
     /* Just draw the static texture a few times. You can think of it like a
        stamp, there isn't a limit to the number of times you can draw with it. */
     const Uint64 nowMs = SDL_GetTicks();
 
-    /* we'll have the triangle grow and shrink over a few seconds. */
-    const float direction = ((nowMs % 2000) >= 1000) ? 1.0f : -1.0f;
-    const float scale = ((float)(((int)(nowMs % 1000)) - 500) / 500.0f) * direction;
-    const float size = 200.0f + (200.0f * scale);
-
-    // Add some affine stretch thing. Can maybe do this with Triangle?
-    // or directly onto a wall/floor?  Having trouble understanding it
-    // fully at the moment.  Why are there only 3 coordinates to specify?
-    // Where would the 4th coordinate end up going?
-    SDL_FPoint origin = {.x = 0.0f, .y = 200.0f};
-    SDL_FPoint right = {.x = 100.0f, .y = 250.0f};
-    SDL_FPoint down = {.x = 50.0f, .y = 400.0f};
-    SDL_RenderTextureAffine(renderer, texture, NULL, &origin, &right, &down);
-    SDL_Vertex vertices[4];
-    int i;
-
-    /* Draw a single triangle with a different color at each vertex. Center this one and make it grow and shrink. */
-    /* You always draw triangles with this, but you can string triangles together to form polygons. */
-    SDL_zeroa(vertices);
-    vertices[0].position.x = ((float)WINDOW_WIDTH) / 2.0f;
-    vertices[0].position.y = (((float)WINDOW_HEIGHT) - size) / 2.0f;
-    vertices[0].color.r = 1.0f;
-    vertices[0].color.a = 1.0f;
-    vertices[1].position.x = (((float)WINDOW_WIDTH) + size) / 2.0f;
-    vertices[1].position.y = (((float)WINDOW_HEIGHT) + size) / 2.0f;
-    vertices[1].color.g = 1.0f;
-    vertices[1].color.a = 1.0f;
-    vertices[2].position.x = (((float)WINDOW_WIDTH) - size) / 2.0f;
-    vertices[2].position.y = (((float)WINDOW_HEIGHT) + size) / 2.0f;
-    vertices[2].color.b = 1.0f;
-    vertices[2].color.a = 1.0f;
-
-    SDL_RenderGeometry(renderer, NULL, vertices, 3, NULL, 0);
-
-    /* you can also map a texture to the geometry! Texture coordinates go from 0.0f to 1.0f. That will be the location
-       in the texture bound to this vertex. */
-    SDL_zeroa(vertices);
-    vertices[0].position.x = 0.0f;
-    vertices[0].position.y = 0.0f;
-    vertices[0].color.r = vertices[0].color.g = vertices[0].color.b = vertices[0].color.a = 1.0f;
-    vertices[0].tex_coord.x = 0.0f;
-    vertices[0].tex_coord.y = 0.0f;
-    vertices[1].position.x = 150.0f;
-    vertices[1].position.y = 10.0f;
-    vertices[1].color.r = vertices[1].color.g = vertices[1].color.b = vertices[1].color.a = 1.0f;
-    vertices[1].tex_coord.x = 1.0f;
-    vertices[1].tex_coord.y = 0.0f;
-    vertices[2].position.x = 10.0f;
-    vertices[2].position.y = 150.0f;
-    vertices[2].color.r = vertices[2].color.g = vertices[2].color.b = vertices[2].color.a = 1.0f;
-    vertices[2].tex_coord.x = 0.0f;
-    vertices[2].tex_coord.y = 1.0f;
-    SDL_RenderGeometry(renderer, texture, vertices, 3, NULL, 0);
-
-    /* Did that only draw half of the texture? You can do multiple triangles sharing some vertices,
-       using indices, to get the whole thing on the screen: */
-
-    /* Let's just move this over so it doesn't overlap... */
-    for (i = 0; i < 3; i++)
-    {
-        vertices[i].position.x += 450;
-    }
-
-    /* we need one more vertex, since the two triangles can share two of them. */
-    vertices[3].position.x = 600.0f;
-    vertices[3].position.y = 300.0f;
-    vertices[3].color.r = vertices[3].color.g = vertices[3].color.b = vertices[3].color.a = 1.0f;
-    vertices[3].tex_coord.x = 1.0f;
-    vertices[3].tex_coord.y = 1.0f;
-
-    /* And an index to tell it to reuse some of the vertices between triangles... */
-    {
-        /* 4 vertices, but 6 actual places they used. Indices need less bandwidth to transfer and can reorder vertices easily! */
-        const int indices[] = {0, 1, 2, 1, 2, 3};
-        SDL_RenderGeometry(renderer, texture, vertices, 4, indices, SDL_arraysize(indices));
-    }
+    /* Draw Player */
+    Player *player = &as->player;
+    SDL_SetRenderDrawColor(as->renderer, player->color[0], player->color[1], player->color[2], 255);
+    SDL_FRect playerRect = {
+        .x = player->pos[0],
+        .y = player->pos[1],
+        .w = 50,
+        .h = 100,
+    };
+    SDL_RenderFillRect(as->renderer, &playerRect);
+    SDL_RenderPoint(as->renderer, player->pos[0], player->pos[1]);
 
     /* Draw FPS */
-    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-    SDL_RenderDebugText(renderer, 5, 5, debug_string);
+    SDL_SetRenderDrawColor(as->renderer, 255, 255, 255, 255);
+    SDL_RenderDebugText(as->renderer, 5, 5, debug_string);
 
     /* put the newly-cleared rendering on the screen. */
-    SDL_RenderPresent(renderer);
+    SDL_RenderPresent(as->renderer);
+}
+
+static void update(AppState *as, Uint64 dt_ns)
+{
+    Player *player = &as->player;
+
+    // Not sure how to use the time to keep frame rate constant yet
+    // double time = (double)dt_ns * 1e-9;
+    int8_t dirX = player->buttonPressed.d - player->buttonPressed.a;
+    int8_t dirY = player->buttonPressed.s - player->buttonPressed.w;
+
+    int64_t velX = player->vel[0];
+    int64_t velY = player->vel[1];
+
+    int64_t posX = player->pos[0] + dirX * velX;
+    int64_t posY = player->pos[1] + dirY * velY;
+
+    player->pos[0] = posX;
+    player->pos[1] = posY;
+    // printf("(posX, posY): (%d, %d)\n", posX, posY);
+}
+
+static void player_init(Player *player)
+{
+    player->pos[0] = 100;
+    player->pos[1] = 100;
+    player->vel[0] = 10;
+    player->vel[1] = 10;
+    player->color[0] = 0;
+    player->color[1] = 0;
+    player->color[2] = 0;
 }
 
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
@@ -131,13 +97,6 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     if (!SDL_CreateWindowAndRenderer("client", WINDOW_WIDTH, WINDOW_HEIGHT, 0, &as->window, &as->renderer))
     {
         return SDL_APP_FAILURE;
-    }
-
-    /* set up some random points */
-    for (int i = 0; i < SDL_arraysize(points); i++)
-    {
-        points[i].x = (SDL_randf() * 440.0f) + 100.0f;
-        points[i].y = (SDL_randf() * 280.0f) + 100.0f;
     }
 
     SDL_Surface *surface = NULL;
@@ -165,6 +124,8 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 
     SDL_DestroySurface(surface); /* done with this, the texture has a copy of the pixels now. */
     SDL_SetDefaultTextureScaleMode(as->renderer, SDL_SCALEMODE_NEAREST);
+
+    player_init(&as->player);
     return SDL_APP_CONTINUE;
 }
 
@@ -176,7 +137,40 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
     case SDL_EVENT_QUIT:
         return SDL_APP_SUCCESS;
         break;
+    case SDL_EVENT_KEY_DOWN:
+    {
+        SDL_Keycode sym = event->key.key;
+        // printf("SDL_EVENT_KEY_DOWN: %d\n", sym);
+        if (sym == SDLK_W)
+            as->player.buttonPressed.w = 1;
+        if (sym == SDLK_A)
+            as->player.buttonPressed.a = 1;
+        if (sym == SDLK_S)
+            as->player.buttonPressed.s = 1;
+        if (sym == SDLK_D)
+            as->player.buttonPressed.d = 1;
+        if (sym == SDLK_SPACE)
+            as->player.buttonPressed.space = 1;
+        break;
     }
+    case SDL_EVENT_KEY_UP:
+    {
+        SDL_Keycode sym = event->key.key;
+        // printf("SDL_EVENT_KEY_UP: %d\n", sym);
+        if (sym == SDLK_W)
+            as->player.buttonPressed.w = 0;
+        if (sym == SDLK_A)
+            as->player.buttonPressed.a = 0;
+        if (sym == SDLK_S)
+            as->player.buttonPressed.s = 0;
+        if (sym == SDLK_D)
+            as->player.buttonPressed.d = 0;
+        if (sym == SDLK_SPACE)
+            as->player.buttonPressed.space = 0;
+        break;
+    }
+    }
+
     return SDL_APP_CONTINUE;
 }
 
@@ -189,7 +183,8 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     Uint64 now = SDL_GetTicksNS();
     Uint64 dt_ns = now - past;
 
-    draw(as->renderer);
+    update(as, dt_ns);
+    draw(as);
     /*
     Not exactly sure what this does, but thinking its to prevent issues
     with roll over.
