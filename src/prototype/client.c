@@ -52,15 +52,15 @@ static void update(AppState *as, Uint64 dt_ns)
     Player *player = &as->player;
 
     // Not sure how to use the time to keep frame rate constant yet
-    // double time = (double)dt_ns * 1e-9;
-    int8_t dirX = player->buttonPressed.d - player->buttonPressed.a;
-    int8_t dirY = player->buttonPressed.s - player->buttonPressed.w;
+    double time = (double)dt_ns * 1e-9;
+    double dirX = player->buttonPressed.d - player->buttonPressed.a;
+    double dirY = player->buttonPressed.s - player->buttonPressed.w;
 
-    int64_t velX = player->vel[0];
-    int64_t velY = player->vel[1];
+    double velX = player->vel[0];
+    double velY = player->vel[1];
 
-    int64_t posX = player->pos[0] + dirX * velX;
-    int64_t posY = player->pos[1] + dirY * velY;
+    double posX = (player->pos[0] + dirX * velX * time);
+    double posY = (player->pos[1] + dirY * velY * time);
 
     player->pos[0] = posX;
     player->pos[1] = posY;
@@ -71,8 +71,8 @@ static void player_init(Player *player)
 {
     player->pos[0] = 100;
     player->pos[1] = 100;
-    player->vel[0] = 10;
-    player->vel[1] = 10;
+    player->vel[0] = 1000; // Found by trial and error with dt
+    player->vel[1] = 1000; // Found by trial and error with dt
     player->color[0] = 0;
     player->color[1] = 0;
     player->color[2] = 0;

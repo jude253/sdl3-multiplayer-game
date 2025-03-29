@@ -17,8 +17,8 @@ typedef struct {
 } ButtonPressed;
 
 typedef struct {
-    int64_t pos[2];
-    int64_t vel[2];
+    double pos[2];
+    double vel[2];
     unsigned char color[3];
     ButtonPressed buttonPressed;
 } Player;
