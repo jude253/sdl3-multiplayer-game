@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-
+set -e
 # This is a simple script to make it easier for me to build project
 # in the same structure repeatedly
 
